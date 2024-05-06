@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Type {
+  FOLDER
+  FILE
+}
+
+model Music_Folder {
+  id String @id @default(uuid())
+  type Type @default(FOLDER)
+  name String
+  parent_folder_id String?
+  parent_folder Music_Folder? @relation("ParentFolders", fields: [parent_folder_id], references: [id])
+  children_files Music_File[]
+  children_folders  Music_Folder[]  @relation("ParentFolders")
+}
+model Music_File {
+  id    Int     @id @default(autoincrement())
+  type Type @default(FILE)
+  name  String
+  url   String
+  duration Int
+  format String
+  parent_folder Music_Folder @relation(fields: [folder_id], references: [id])
+  folder_id String
+}

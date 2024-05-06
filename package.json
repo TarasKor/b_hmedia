@@ -1,0 +1,16 @@
+{
+  "name": "b_hmedia",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prisma": "^5.13.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.13.0",
+    "hono": "^4.3.2"
+  }
+}
