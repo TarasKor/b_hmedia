@@ -19,21 +19,21 @@ enum Type {
 }
 
 model Music_Folder {
-  id String @id @default(uuid())
+  id String @id @default(cuid())
   type Type @default(FOLDER)
   name String
   parent_folder_id String?
-  parent_folder Music_Folder? @relation("ParentFolders", fields: [parent_folder_id], references: [id])
+  parent_folder Music_Folder? @relation("ParentFolders", fields: [parent_folder_id], references: [id], onDelete: Cascade)
   children_files Music_File[]
   children_folders  Music_Folder[]  @relation("ParentFolders")
 }
 model Music_File {
-  id    Int     @id @default(autoincrement())
+  id    String     @id @default(cuid())
   type Type @default(FILE)
   name  String
   url   String
   duration Int
   format String
-  parent_folder Music_Folder @relation(fields: [folder_id], references: [id])
+  parent_folder Music_Folder @relation(fields: [folder_id], references: [id], onDelete: Cascade)
   folder_id String
 }

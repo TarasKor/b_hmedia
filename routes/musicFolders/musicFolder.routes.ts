@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import {
   createFolder,
+  deleteFolder,
   getAllFolders,
   getAllParents,
   getFolderByid,
@@ -50,6 +51,18 @@ folders
       return c.json({ message: "ERROR CREATING FOLDER" }, 500);
     }
     return c.json({ folder: createdFolder });
+  })
+  .delete("/:id", async (c) => {
+    const { id } = c.req.param();
+    const folder = await getFolderByid(id);
+    if (!folder) {
+      return c.json({ message: "FOLDER NOT FOUND" }, 404);
+    }
+    const deletedFolder = await deleteFolder(id);
+    if (!deletedFolder) {
+      return c.json({ message: "ERROR DELETING FOLDER" }, 500);
+    }
+    return c.json({ folder: deletedFolder });
   });
 
 export default folders;

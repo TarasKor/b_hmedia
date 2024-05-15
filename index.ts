@@ -1,12 +1,14 @@
 import { logger } from "hono/logger";
 import { prisma } from "./db/prismaClient";
 import { Hono } from "hono";
-import foldersRouter from "./routes/folders/folder.routes";
+import musicFoldersRouter from "./routes/musicFolders/musicFolder.routes";
+import musicFilesRouter from "./routes/musicFiles/musicFiles.routes";
 
 const app = new Hono().basePath("/api");
 
 app.use("*", logger());
-app.route("/folder", foldersRouter);
+app.route("m/folder", musicFoldersRouter);
+app.route("m/file", musicFilesRouter);
 
 try {
   await prisma.$connect();

@@ -85,9 +85,39 @@ export const getFolderChildren = async (id: string) => {
 
 export const createFolder = async (name: string, parent_folder_id: string) => {
   try {
+    if (!parent_folder_id) {
+      return null;
+    }
     const folder = await prisma.music_Folder.create({
       data: {
         name: name,
+        parent_folder_id: parent_folder_id,
+      },
+    });
+    await prisma.music_Folder.update({
+      where: {
+        id: parent_folder_id,
+      },
+      data: {
+        children_folders: {
+          connect: {
+            id: folder.id,
+          },
+        },
+      },
+    });
+    return folder;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+export const deleteFolder = async (id: string) => {
+  try {
+    const folder = await prisma.music_Folder.delete({
+      where: {
+        id: id,
       },
     });
     return folder;
