@@ -1,14 +1,10 @@
 import { Hono } from "hono";
-import {
-  createFolder,
-  deleteFolder,
-  getAllParents,
-  getFolderByid,
-  getFolderChildren,
-} from "../../controllers/folders/folder.controllers";
+import path from "path";
+import { getAllParents } from "../../controllers/folders/folder.controllers";
 import {
   getAllFiles,
   getFileByid,
+  uploadMusicFileToMinio,
 } from "../../controllers/musicFiles/musicFiles.controllers";
 
 const folders = new Hono();
@@ -37,9 +33,11 @@ folders
     });
   })
   .post("/", async (c) => {
-    const body = (await c.req.json()) as {
-      name: string;
-    };
+    const { file, name }: { name: string; file: File } =
+      await c.req.parseBody();
+    const filePath = path.resolve(import.meta.dir, "../../tempFolder", name);
+    await Bun.write(filePath, file);
+    uploadMusicFileToMinio("music", name, filePath);
     // const createdFolder = await createFolder(body.name, body.parent_folder_id);
     // if (!createdFolder) {
     //   return c.json({ message: "ERROR CREATING FOLDER" }, 500);

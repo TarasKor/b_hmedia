@@ -1,3 +1,4 @@
+import { minioClient } from "../..";
 import { prisma } from "../../db/prismaClient";
 
 export const getAllFiles = async () => {
@@ -21,5 +22,21 @@ export const getFileByid = async (id: string) => {
   } catch (error) {
     console.error(error);
     return null;
+  }
+};
+
+export const uploadMusicFileToMinio = async (
+  bucketName: string,
+  name: string,
+  file: string
+) => {
+  try {
+    await minioClient.fPutObject(bucketName, name, file);
+    const res = await minioClient.getObject(bucketName, name);
+    console.log(res);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 };
