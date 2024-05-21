@@ -2,10 +2,12 @@ import { Hono } from "hono";
 import path from "path";
 import { getAllParents } from "../../controllers/folders/folder.controllers";
 import {
+  createMusicFile,
   getAllFiles,
   getFileByid,
   uploadMusicFileToMinio,
 } from "../../controllers/musicFiles/musicFiles.controllers";
+import { createId } from "@paralleldrive/cuid2";
 
 const folders = new Hono();
 
@@ -33,29 +35,34 @@ folders
     });
   })
   .post("/", async (c) => {
-    const { file, name }: { name: string; file: File } =
+    const {
+      file,
+      name,
+      folder_id,
+      format,
+    }: { file: File; name: string; folder_id: string; format: string } =
       await c.req.parseBody();
     const filePath = path.resolve(import.meta.dir, "../../tempFolder", name);
     await Bun.write(filePath, file);
-    uploadMusicFileToMinio("music", name, filePath);
-    // const createdFolder = await createFolder(body.name, body.parent_folder_id);
-    // if (!createdFolder) {
-    //   return c.json({ message: "ERROR CREATING FOLDER" }, 500);
-    // }
-    // return c.json({ folder: createdFolder });
-    return c.json({ message: "NOT IMPLEMENTED" }, 501);
-  });
-//   .delete("/:id", async (c) => {
-//     const { id } = c.req.param();
-//     const folder = await getFolderByid(id);
-//     if (!folder) {
-//       return c.json({ message: "FOLDER NOT FOUND" }, 404);
-//     }
-//     const deletedFolder = await deleteFolder(id);
-//     if (!deletedFolder) {
-//       return c.json({ message: "ERROR DELETING FOLDER" }, 500);
-//     }
-//     return c.json({ folder: deletedFolder });
-//   });
+    const int_name = createId();
+    const url = await uploadMusicFileToMinio(
+      "music",
+      `${int_name}.${format}`,
+      filePath
+    );
+    if (!url) {
+      return c.json({ message: "ERROR UPLOADING FILE" }, 500);
+    }
+    const musicFile = await createMusicFile(
+      name,
+      folder_id,
+      `${int_name}.${format}`
+    );
+    if (!musicFile) {
+      return c.json({ message: "ERROR CREATING FILE" }, 500);
+    }
+    return c.json({ file: musicFile });
+  })
+  .delete("/:id", async (c) => {});
 
 export default folders;

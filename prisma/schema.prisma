@@ -31,7 +31,7 @@ model Music_File {
   id    String     @id @default(cuid())
   type Type @default(FILE)
   name  String
-  url   String
+  int_name   String
   duration Int
   format String
   parent_folder Music_Folder @relation(fields: [folder_id], references: [id], onDelete: Cascade)
