@@ -3,6 +3,7 @@ import path from "path";
 import { getAllParents } from "../../controllers/folders/folder.controllers";
 import {
   createMusicFile,
+  deleteMusicFile,
   getAllFiles,
   getFileByid,
   uploadMusicFileToMinio,
@@ -63,6 +64,13 @@ folders
     }
     return c.json({ file: musicFile });
   })
-  .delete("/:id", async (c) => {});
+  .delete("/:id", async (c) => {
+    const { id } = c.req.param();
+    const result = await deleteMusicFile(id);
+    if (!result) {
+      return c.json({ message: "ERROR DELETING FILE" }, 500);
+    }
+    return c.json({ message: "FILE DELETED" });
+  });
 
 export default folders;

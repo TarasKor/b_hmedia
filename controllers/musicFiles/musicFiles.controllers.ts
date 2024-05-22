@@ -73,3 +73,45 @@ export const createMusicFile = async (
     return false;
   }
 };
+
+export const deleteMusicFileFromMinio = async (
+  bucketName: string,
+  name: string
+) => {
+  try {
+    await minioClient.removeObject(bucketName, name);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
+export const deleteMusicFile = async (id: string) => {
+  try {
+    const file = await prisma.music_File.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!file) {
+      return false;
+    }
+    await prisma.music_File.delete({
+      where: {
+        id,
+      },
+    });
+    const isDeletedFromMinIO = await deleteMusicFileFromMinio(
+      "music",
+      file.int_name
+    );
+    if (!isDeletedFromMinIO) {
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
