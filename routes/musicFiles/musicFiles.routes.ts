@@ -5,10 +5,13 @@ import {
   createMusicFile,
   deleteMusicFile,
   getAllFiles,
+  getAsyncBufferFromMinio,
   getFileByid,
   uploadMusicFileToMinio,
 } from "../../controllers/musicFiles/musicFiles.controllers";
 import { createId } from "@paralleldrive/cuid2";
+import { stream } from "hono/streaming";
+import { minioClient } from "../..";
 
 const folders = new Hono();
 
@@ -71,6 +74,21 @@ folders
       return c.json({ message: "ERROR DELETING FILE" }, 500);
     }
     return c.json({ message: "FILE DELETED" });
+  })
+  .get("/:id/stream", async (c) => {
+    const { id } = c.req.param();
+    const file = await getFileByid(id);
+    if (!file) {
+      return c.json({ message: "FILE NOT FOUND" }, 404);
+    }
+    const d = await getAsyncBufferFromMinio("music", file.int_name);
+    return stream(c, async (stream) => {
+      // Write a process to be executed when aborted.
+      stream.onAbort(() => {
+        console.log("Aborted!");
+      });
+      await stream.write(d);
+    });
   });
 
 export default folders;

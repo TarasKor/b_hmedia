@@ -115,3 +115,21 @@ export const deleteMusicFile = async (id: string) => {
     return false;
   }
 };
+export const getAsyncBufferFromMinio = async (
+  bucketName: string,
+  name: string
+) => {
+  const data = await minioClient.getObject(bucketName, name);
+  return new Promise<Buffer>((resolve, reject) => {
+    const chunks: Uint8Array[] = [];
+    data.on("data", (chunk) => {
+      chunks.push(chunk);
+    });
+    data.on("end", () => {
+      resolve(Buffer.concat(chunks));
+    });
+    data.on("error", (err) => {
+      reject(err);
+    });
+  });
+};
