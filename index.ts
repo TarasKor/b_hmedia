@@ -4,6 +4,8 @@ import * as Minio from "minio";
 import { Hono } from "hono";
 import musicFoldersRouter from "./routes/musicFolders/musicFolder.routes";
 import musicFilesRouter from "./routes/musicFiles/musicFiles.routes";
+import videoFolderRouter from "./routes/videoFolders/videoFolder.routes";
+import videoFilesRouter from "./routes/videoFiles/videoFiles.routes";
 
 const app = new Hono().basePath("/api");
 export const minioClient = new Minio.Client({
@@ -17,6 +19,8 @@ export const minioClient = new Minio.Client({
 app.use("*", logger());
 app.route("m/folder", musicFoldersRouter);
 app.route("m/file", musicFilesRouter);
+app.route("v/folder", videoFolderRouter);
+app.route("v/file", videoFilesRouter);
 
 try {
   await prisma.$connect();

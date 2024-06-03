@@ -6,7 +6,7 @@ import {
   getAllParents,
   getFolderByid,
   getFolderChildren,
-} from "../../controllers/musicFolders/musicFolder.controllers";
+} from "../../controllers/videoFolders/videoFiolder.controllers";
 
 const musicFolders = new Hono();
 

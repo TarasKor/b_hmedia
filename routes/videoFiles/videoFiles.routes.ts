@@ -1,21 +1,21 @@
 import { Hono } from "hono";
 import path from "path";
-import { getAllParents } from "../../controllers/musicFolders/musicFolder.controllers";
-import {
-  createMusicFile,
-  deleteMusicFile,
-  getAllFiles,
-  getAsyncBufferFromMinio,
-  getFileByid,
-  uploadMusicFileToMinio,
-} from "../../controllers/musicFiles/musicFiles.controllers";
+import { getAllParents } from "../../controllers/videoFolders/videoFiolder.controllers";
 import { createId } from "@paralleldrive/cuid2";
 import { stream } from "hono/streaming";
 import { minioClient } from "../..";
+import {
+  createVideoFile,
+  deleteVideoFile,
+  uploadVideoFileToMinio,
+  getAllFiles,
+  getAsyncBufferFromMinio,
+  getFileByid,
+} from "../../controllers/videoFiles/videoFiles.contorollers";
 
-const musicFiles = new Hono();
+const videoFiles = new Hono();
 
-musicFiles
+videoFiles
   .get("/", async (c) => {
     const files = await getAllFiles();
     if (!files) {
@@ -46,18 +46,19 @@ musicFiles
       format,
     }: { file: File; name: string; folder_id: string; format: string } =
       await c.req.parseBody();
+    console.log("Test");
     const filePath = path.resolve(import.meta.dir, "../../tempFolder", name);
     await Bun.write(filePath, file);
     const int_name = createId();
-    const url = await uploadMusicFileToMinio(
-      "music",
+    const url = await uploadVideoFileToMinio(
+      "videos",
       `${int_name}.${format}`,
       filePath
     );
     if (!url) {
       return c.json({ message: "ERROR UPLOADING FILE" }, 500);
     }
-    const musicFile = await createMusicFile(
+    const musicFile = await createVideoFile(
       name,
       folder_id,
       `${int_name}.${format}`
@@ -69,7 +70,7 @@ musicFiles
   })
   .delete("/:id", async (c) => {
     const { id } = c.req.param();
-    const result = await deleteMusicFile(id);
+    const result = await deleteVideoFile(id);
     if (!result) {
       return c.json({ message: "ERROR DELETING FILE" }, 500);
     }
@@ -81,7 +82,7 @@ musicFiles
     if (!file) {
       return c.json({ message: "FILE NOT FOUND" }, 404);
     }
-    const d = await getAsyncBufferFromMinio("music", file.int_name);
+    const d = await getAsyncBufferFromMinio("videos", file.int_name);
     return stream(c, async (stream) => {
       // Write a process to be executed when aborted.
       stream.onAbort(() => {
@@ -91,4 +92,4 @@ musicFiles
     });
   });
 
-export default musicFiles;
+export default videoFiles;

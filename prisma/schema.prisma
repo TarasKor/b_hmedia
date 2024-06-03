@@ -27,6 +27,16 @@ model Music_Folder {
   children_files Music_File[]
   children_folders  Music_Folder[]  @relation("ParentFolders")
 }
+
+model Video_Folder {
+  id String @id @default(cuid())
+  type Type @default(FOLDER)
+  name String
+  parent_folder_id String?
+  parent_folder Video_Folder? @relation("ParentFolders", fields: [parent_folder_id], references: [id], onDelete: Cascade)
+  children_files Video_File[]
+  children_folders  Video_Folder[]  @relation("ParentFolders")
+}
 model Music_File {
   id    String     @id @default(cuid())
   type Type @default(FILE)
@@ -35,5 +45,16 @@ model Music_File {
   duration Int
   format String
   parent_folder Music_Folder @relation(fields: [folder_id], references: [id], onDelete: Cascade)
+  folder_id String
+}
+
+model Video_File {
+  id    String     @id @default(cuid())
+  type Type @default(FILE)
+  name  String
+  int_name   String
+  duration Int
+  format String
+  parent_folder Video_Folder @relation(fields: [folder_id], references: [id], onDelete: Cascade)
   folder_id String
 }
