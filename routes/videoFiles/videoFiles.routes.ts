@@ -12,6 +12,7 @@ import {
   getAsyncBufferFromMinio,
   getFileByid,
 } from "../../controllers/videoFiles/videoFiles.contorollers";
+import { clearFolder, mergeChunks } from "../../utils";
 
 const videoFiles = new Hono();
 
@@ -38,18 +39,43 @@ videoFiles
       parent,
     });
   })
-  .post("/", async (c) => {
+  .post("/upload", async (c) => {
     const {
-      file,
-      name,
-      folder_id,
-      format,
-    }: { file: File; name: string; folder_id: string; format: string } =
-      await c.req.parseBody();
-    console.log("Test");
-    const filePath = path.resolve(import.meta.dir, "../../tempFolder", name);
-    await Bun.write(filePath, file);
+      chunk,
+      chunksAmount,
+      chunkNumber,
+      fileName,
+    }: {
+      chunk: File;
+      chunksAmount: string;
+      chunkNumber: string;
+      fileName: string;
+    } = await c.req.parseBody();
+    const filePath = path.resolve(
+      import.meta.dir,
+      "../../tempFolder",
+      `${fileName}.part_${chunkNumber}`
+    );
+    await Bun.write(filePath, chunk);
+    return c.json({
+      message: "CHUNK RECEIVED",
+      progress: Number(chunkNumber) / Number(chunksAmount),
+    });
+  })
+  .post("/sync", async (c) => {
+    const { fileName, format, folder_id } = await c.req.json();
+    try {
+      await mergeChunks(fileName);
+    } catch (error) {
+      console.error(error);
+      return c.json({ message: "ERROR MERGING FILES" }, 500);
+    }
     const int_name = createId();
+    const filePath = path.resolve(
+      import.meta.dir,
+      "../../tempFolder",
+      fileName
+    );
     const url = await uploadVideoFileToMinio(
       "videos",
       `${int_name}.${format}`,
@@ -58,15 +84,16 @@ videoFiles
     if (!url) {
       return c.json({ message: "ERROR UPLOADING FILE" }, 500);
     }
-    const musicFile = await createVideoFile(
-      name,
+    const videoFile = await createVideoFile(
+      fileName,
       folder_id,
       `${int_name}.${format}`
     );
-    if (!musicFile) {
+    if (!videoFile) {
       return c.json({ message: "ERROR CREATING FILE" }, 500);
     }
-    return c.json({ file: musicFile });
+    await clearFolder(path.resolve(import.meta.dir, "../../tempFolder"));
+    return c.json({ file: videoFile });
   })
   .delete("/:id", async (c) => {
     const { id } = c.req.param();

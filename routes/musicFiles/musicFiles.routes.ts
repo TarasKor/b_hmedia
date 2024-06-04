@@ -12,6 +12,7 @@ import {
 import { createId } from "@paralleldrive/cuid2";
 import { stream } from "hono/streaming";
 import { minioClient } from "../..";
+import { clearFolder } from "../../utils";
 
 const musicFiles = new Hono();
 
@@ -65,6 +66,7 @@ musicFiles
     if (!musicFile) {
       return c.json({ message: "ERROR CREATING FILE" }, 500);
     }
+    await clearFolder(path.resolve(import.meta.dir, "../../tempFolder"));
     return c.json({ file: musicFile });
   })
   .delete("/:id", async (c) => {

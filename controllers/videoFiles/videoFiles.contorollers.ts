@@ -55,7 +55,7 @@ export const createVideoFile = async (
         format: "mp4",
       },
     });
-    await prisma.music_File.update({
+    await prisma.video_File.update({
       where: {
         id: file.id,
       },

@@ -2,6 +2,7 @@ import { logger } from "hono/logger";
 import { prisma } from "./db/prismaClient";
 import * as Minio from "minio";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import musicFoldersRouter from "./routes/musicFolders/musicFolder.routes";
 import musicFilesRouter from "./routes/musicFiles/musicFiles.routes";
 import videoFolderRouter from "./routes/videoFolders/videoFolder.routes";
@@ -16,6 +17,7 @@ export const minioClient = new Minio.Client({
   secretKey: Bun.env.MINIO_SECRET_KEY || "minioadmin",
 });
 
+app.use(cors());
 app.use("*", logger());
 app.route("m/folder", musicFoldersRouter);
 app.route("m/file", musicFilesRouter);
